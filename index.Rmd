@@ -1,5 +1,8 @@
 ---
 title: "IODS course project"
+
+author: "Lashini Liyanage" 
+
 output:
   html_document:
     theme: cosmo
