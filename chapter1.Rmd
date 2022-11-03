@@ -22,7 +22,7 @@ output:
 
 
 I am excited to participate in this course and learn more about R. 
-When I first arrived in Finland two months ago, my R knowledge was elementary. However, after taking QRS skills, I learned many things. I want to improve my skills in R through this course.I look forward to analysing longitudinal data and the clustering & classification parts the most. Working with GitHub will be a new experience for me. 
+When I first arrived in Finland two months ago, my R knowledge was elementary. However, after taking QRS skills, I learned many things. I want to improve my skills in R through this course.I look forward to analyzing longitudinal data and the clustering & classification parts the most. Working with GitHub will be a new experience for me. 
 When I first saw this course through the courses guide, I wanted to do this as one of my future goals is to do a doctoral degree, and this course would be a perfect course for that. As I already had experience with the "R for Health Data Science" book, I could quickly go through Exercise Set 1. 
 On the other hand, I feel overwhelmed to be a teacher assistant in this course. So I can help other students and, at the same time, I can improve my knowledge.
 I look forward to the upcoming journey. 
