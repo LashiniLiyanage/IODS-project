@@ -1,25 +1,14 @@
----
-title: "**Introduction to Open Data Science**"
-
-author: "Lashini Liyanage"
-
-date: "03.11.2022"
-
-subtitle: "**RHDS Book Chapter 1**"
-
-output: 
-  html_document:
-    theme: flatly
-    highlight: haddock
-    toc: true
-    toc_depth: 2
-    number_section: false
----
 
 # About the course
 
 *Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you should use R Markdown syntax.*
 
+```{r}
+# This is a so-called "R chunk" where you can write R code.
+
+date()
+
+```
 
 I am excited to participate in this course and learn more about R. 
 When I first arrived in Finland two months ago, my R knowledge was elementary. However, after taking QRS skills, I learned many things. I want to improve my skills in R through this course.I look forward to analyzing longitudinal data and the clustering & classification parts the most. Working with GitHub will be a new experience for me. 
