@@ -693,8 +693,6 @@ new_data <- data.frame(attitude = "new_attitudes")
 # Print out the new data
 new_data
 
-# Predict the new students exam points based on attitude
-predict(m, newdata = data.frame(attitude = "new_attitudes"))
 
 
 ```

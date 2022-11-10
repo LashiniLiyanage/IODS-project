@@ -1,5 +1,5 @@
 
-# About the course
+## About the course
 
 *Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you should use R Markdown syntax.*
 
@@ -17,7 +17,7 @@ On the other hand, I feel overwhelmed to be a teacher assistant in this course. 
 I look forward to the upcoming journey. 
 
 
-# Link
+## Link
 
 https://github.com/LashiniLiyanage/IODS-project
 

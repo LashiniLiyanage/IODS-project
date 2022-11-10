@@ -7,16 +7,16 @@
 ```{r}
 date()
 ```
-# Get the data
+## Read the data
 
 ```{r}
 
 data <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/learning2014.txt", sep=",", header=TRUE)
 
-View(data)
+dim(data)
 
 str(data)
-dim(data)
+
 ```
 
 Even though, I have successfully wrangled the dataset, I decided to go with Kimmo's analyzed dataset for further analysis.  
@@ -26,9 +26,10 @@ Even though there were 60 variables in the main dataset, we have selected only 7
 Gender is the only character variable, while all the other are numerical variables. Out of them age and points variables are integers. 
 Thus this dataset consist of 166 observations and 7 variables.
 
-# Graphical Overview and the Summary of data
+## Graphical Overview and the Summary of data
 
 ```{r}
+
 # Descriptive Statistics
 
 summary(data)
@@ -49,6 +50,8 @@ Surface Learning: The values of surf ranges from 1.58 to 4.33. The average of su
 Exam Points: The lowest exam point is 7 while the highest exam point is 33 The average exam points is 22.72 (~23) and the median is 23.
 
 ```{r}
+data <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/learning2014.txt", sep=",", header=TRUE)
+
 # Graphical Representation of Variables
 library(ggplot2)
 library(patchwork)
@@ -87,14 +90,14 @@ e <- ggplot(data, aes(x = surf))+
 (a + b) / (c+d) /e
 
 ```
+
 Through these histograms, we can see that age lies on a positively skewed distribution. Deep learning shows a lit bit of a negatively skewed distribution. Distribution of attitude and the distribution of the strategic learning shows normal yet multi-mode distribution. The distribution of surface learning lies on somewhat a positively skewed and slightly normal distribution. 
 
 ```{r}
-# Graphical Representation of Exam Points with other Variables
 
-## Gender and Exam Points
+# Gender and Exam Points
 
-p1 <- ggplot(learning2014, aes(x = gender, y = points, fill = gender)) +
+p1 <- ggplot(data, aes(x = gender, y = points, fill = gender)) +
   labs(title="Plot of Gender and Exam Points",x="Gender", y = "Exam Points") +
   theme_classic()
   
@@ -108,14 +111,14 @@ The median exam points of both males and females are quite similar to each other
 ```{r}
 # Age and Exam Points
 
-a1 <- ggplot(learning2014, aes(x = age, y = points)) +
+a1 <- ggplot(data, aes(x = age, y = points)) +
   labs(title="Plot of Age and Exam Points",x="Age", y = "Exam Points") 
 a <- a1 + geom_point(colour = "brown1") + theme_classic() + geom_smooth(method = "lm")
 
 
 # Attitude and Exam Points
 
-b1 <- ggplot(learning2014, aes(x = attitude, y = points)) +
+b1 <- ggplot(data, aes(x = attitude, y = points)) +
   labs(title="Plot of Attitude and Exam Points",x="Attitude", y = "Exam Points") 
 b <- b1 + geom_point(colour = "purple") + theme_classic() + geom_smooth(method = "lm")
 
@@ -126,21 +129,21 @@ It is clear to see that there is a positive relationship between attitude and th
 ```{r}
 # Strategic Learning and Exam Points
 
-c1 <- ggplot(learning2014, aes(x = stra,  y = points)) +
+c1 <- ggplot(data, aes(x = stra,  y = points)) +
   labs(title="Plot of Attitude and Exam Points",x="Strategic Learning", y = "Exam Points") 
 c <- c1 + geom_point(colour = "orange") + theme_classic() + geom_smooth(method = "lm")
 
 
 # Deep Learning and Exam Points
 
-d1 <- ggplot(learning2014, aes(x = deep, y = points)) +
+d1 <- ggplot(data, aes(x = deep, y = points)) +
   labs(title="Plot of Deep Learning and Exam Points",x="Deep Learning", y = "Exam Points") 
 d <- d1 + geom_point(colour = "aquamarine3") + theme_classic() + geom_smooth(method = "lm")
 
 
 # Surface Learning and Exam Points
 
-e1 <- ggplot(learning2014, aes(x = surf, y = points)) +
+e1 <- ggplot(data, aes(x = surf, y = points)) +
   labs(title="Plot of Surface Learning and Exam Points",x="Surface Learning", y = "Exam Points") 
 e <- e1 + geom_point(colour = "chartreuse") + theme_classic() + geom_smooth(method = "lm")
 
@@ -150,12 +153,12 @@ c+d/e
 There is a weak positive linear relationship between strategic learning and the exam points. There is no any clear linear relationship between deep learning and the exam points. There is a weak negative linear relationship between surface learning and the exam points. 
 
 
-# Linear Regression
+## Model Fitting and Interpretation
 
 ```{r}
 # Model 1
 
-Model1 <- lm(points ~ attitude + stra + deep, data = learning2014)
+Model1 <- lm(points ~ attitude + stra + deep, data = data)
 summary(Model1)
 ```
 
@@ -164,7 +167,7 @@ summary(Model1)
 ```{r}
 # Model 2
 
-Model2 <- lm(points ~ attitude + stra, data = learning2014)
+Model2 <- lm(points ~ attitude + stra, data = data)
 summary(Model2)
 ```
 
@@ -173,11 +176,11 @@ summary(Model2)
 ```{r}
 # Model 3
 
-Model3 <- lm(points ~ attitude , data = learning2014)
+Model3 <- lm(points ~ attitude , data = data)
 summary(Model3)
 ```
 
-# Diagnostic Plots
+## Diagnostic Plots
 
 ```{r}
 par(mfrow = c(2,2))
