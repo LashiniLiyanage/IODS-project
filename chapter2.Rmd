@@ -1,13 +1,193 @@
-# Insert chapter 2 title here
+# Regression Analysis
 
 *Describe the work you have done this week and summarize your learning.*
 
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
+- I worked on data wrangling, graphical representation and linear regression during this week.  
 
 ```{r}
 date()
 ```
+# Get the data
 
-Here we go again...
+```{r}
+
+data <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/learning2014.txt", sep=",", header=TRUE)
+
+View(data)
+
+str(data)
+dim(data)
+```
+
+Even though, I have successfully wrangled the dataset, I decided to go with Kimmo's analyzed dataset for further analysis.  
+
+Before the wrangling, there were 183 observations and 60 variables. For this analysis, we have excluded those who have obtained 0 for Exam Points. So the observation count for this dataset is 166.
+Even though there were 60 variables in the main dataset, we have selected only 7 variables for this: gender, age, attitude, deep (deep learning), stra (strategic learning), surf (surface learning) and points (exam points).The variables gender, age and points were directly used in the analysis. The "attitude" variable was created using "Attitude/10" from the previous dataset. The variable "surf" was created using the mean value of questions related surface questions. The variable "stra" was created using the mean value of questions related strategic questions. The variable "deep" was created using the mean value of questions related deep questions. 
+Gender is the only character variable, while all the other are numerical variables. Out of them age and points variables are integers. 
+Thus this dataset consist of 166 observations and 7 variables.
+
+# Graphical Overview and the Summary of data
+
+```{r}
+# Descriptive Statistics
+
+summary(data)
+```
+
+Gender : This is a categorical variable, So it is not possible to compute descriptive statistics. 
+
+Age: The youngest participant is 17 years old while the oldest participant is 55 years old. The average age of the study participants is 25.51 (~26) years. 
+
+Attitude: The values of attitude ranges from 1.40 to 5.00. The average of attitude is 3.14  while the median is 3.20.
+
+Deep Learning : The values of deep ranges from 1.59 to 4.92. The average of deep is 3.68  while the median is 3.67.
+
+Strategic Learning : The values of stra ranges from 1.25 to 5.00. The average of stra is 3.12  while the median is 3.19.
+
+Surface Learning: The values of surf ranges from 1.58 to 4.33. The average of surf is 2.79  while the median is 2.83.
+
+Exam Points: The lowest exam point is 7 while the highest exam point is 33 The average exam points is 22.72 (~23) and the median is 23.
+
+```{r}
+# Graphical Representation of Variables
+library(ggplot2)
+library(patchwork)
+
+# Distribution of Age
+a <- ggplot(data, aes(x = age))+
+  geom_histogram(color = "black", fill = "darkblue", bins = 30) +
+  labs(title="Distribution of Age",x="Age", y = "Count") +
+  theme_classic()
+
+# Distribution of Attitude
+b <- ggplot(data, aes(x = attitude))+
+  geom_histogram(color="black", fill="lightblue",linetype="dashed", bins = 30) +
+  labs(title="Distribution of Attitude",x="Attitude", y = "Count") +
+  theme_classic()
+
+
+# Distribution of Strategic Learning
+c <- ggplot(data, aes(x = stra))+
+  geom_histogram(color = "black", fill = "chocolate", bins = 30) +
+  labs(title="Distribution of Strategic Learning",x="Strategic Learning", y = "Count") +
+  theme_classic()
+
+# Distribution of Deep Learning
+d <- ggplot(data, aes(x = deep))+
+  geom_histogram(color="black", fill="lightgreen",linetype="dashed", bins = 30) +
+  labs(title="Distribution of Deep Learning",x="Deep Learning", y = "Count") +
+  theme_classic()
+
+# Distribution of Surface Learning
+e <- ggplot(data, aes(x = surf))+
+  geom_histogram(color="gold4", fill="gold2",linetype="dashed", bins = 30) +
+  labs(title="Distribution of Surface Learning",x="Surface Learning", y = "Count") +
+  theme_classic()
+
+(a + b) / (c+d) /e
+
+```
+Through these histograms, we can see that age lies on a positively skewed distribution. Deep learning shows a lit bit of a negatively skewed distribution. Distribution of attitude and the distribution of the strategic learning shows normal yet multi-mode distribution. The distribution of surface learning lies on somewhat a positively skewed and slightly normal distribution. 
+
+```{r}
+# Graphical Representation of Exam Points with other Variables
+
+## Gender and Exam Points
+
+p1 <- ggplot(learning2014, aes(x = gender, y = points, fill = gender)) +
+  labs(title="Plot of Gender and Exam Points",x="Gender", y = "Exam Points") +
+  theme_classic()
+  
+p2 <- p1 + geom_boxplot()
+p2 
+
+```
+
+The median exam points of both males and females are quite similar to each other. But the female exam points are left skewed while the male exam points are right skewed. There is one outlier in the female category. 
+
+```{r}
+# Age and Exam Points
+
+a1 <- ggplot(learning2014, aes(x = age, y = points)) +
+  labs(title="Plot of Age and Exam Points",x="Age", y = "Exam Points") 
+a <- a1 + geom_point(colour = "brown1") + theme_classic() + geom_smooth(method = "lm")
+
+
+# Attitude and Exam Points
+
+b1 <- ggplot(learning2014, aes(x = attitude, y = points)) +
+  labs(title="Plot of Attitude and Exam Points",x="Attitude", y = "Exam Points") 
+b <- b1 + geom_point(colour = "purple") + theme_classic() + geom_smooth(method = "lm")
+
+a + b
+```
+It is clear to see that there is a positive relationship between attitude and the exam points. There is no any clear linear relationship between age and the exam points. However, the regression line shows that there is a negative linear relationship between age and the exam points. 
+
+```{r}
+# Strategic Learning and Exam Points
+
+c1 <- ggplot(learning2014, aes(x = stra,  y = points)) +
+  labs(title="Plot of Attitude and Exam Points",x="Strategic Learning", y = "Exam Points") 
+c <- c1 + geom_point(colour = "orange") + theme_classic() + geom_smooth(method = "lm")
+
+
+# Deep Learning and Exam Points
+
+d1 <- ggplot(learning2014, aes(x = deep, y = points)) +
+  labs(title="Plot of Deep Learning and Exam Points",x="Deep Learning", y = "Exam Points") 
+d <- d1 + geom_point(colour = "aquamarine3") + theme_classic() + geom_smooth(method = "lm")
+
+
+# Surface Learning and Exam Points
+
+e1 <- ggplot(learning2014, aes(x = surf, y = points)) +
+  labs(title="Plot of Surface Learning and Exam Points",x="Surface Learning", y = "Exam Points") 
+e <- e1 + geom_point(colour = "chartreuse") + theme_classic() + geom_smooth(method = "lm")
+
+c+d/e
+```
+
+There is a weak positive linear relationship between strategic learning and the exam points. There is no any clear linear relationship between deep learning and the exam points. There is a weak negative linear relationship between surface learning and the exam points. 
+
+
+# Linear Regression
+
+```{r}
+# Model 1
+
+Model1 <- lm(points ~ attitude + stra + deep, data = learning2014)
+summary(Model1)
+```
+
+
+
+```{r}
+# Model 2
+
+Model2 <- lm(points ~ attitude + stra, data = learning2014)
+summary(Model2)
+```
+
+
+
+```{r}
+# Model 3
+
+Model3 <- lm(points ~ attitude , data = learning2014)
+summary(Model3)
+```
+
+# Diagnostic Plots
+
+```{r}
+par(mfrow = c(2,2))
+plot(Model3, which = c(1,2,5))
+```
+
+Residuals vs Fitted values:
+
+Normal QQ-plot:
+
+Residuals vs Leverage
+
+
