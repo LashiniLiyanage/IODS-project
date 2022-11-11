@@ -21,6 +21,8 @@ str(data)
 
 Even though, I have successfully wrangled the dataset, I decided to go with Kimmo's analyzed dataset for further analysis.  
 
+I gave the dataset a name as "data". In the further analysis, this dataset willbe adressed by "data". 
+
 Before the wrangling, there were 183 observations and 60 variables. For this analysis, we have excluded those who have obtained 0 for Exam Points. So the observation count for this dataset is 166.
 Even though there were 60 variables in the main dataset, we have selected only 7 variables for this: gender, age, attitude, deep (deep learning), stra (strategic learning), surf (surface learning) and points (exam points).The variables gender, age and points were directly used in the analysis. The "attitude" variable was created using "Attitude/10" from the previous dataset. The variable "surf" was created using the mean value of questions related surface questions. The variable "stra" was created using the mean value of questions related strategic questions. The variable "deep" was created using the mean value of questions related deep questions. 
 Gender is the only character variable, while all the other are numerical variables. Out of them age and points variables are integers. 
@@ -28,31 +30,28 @@ Thus this dataset consist of 166 observations and 7 variables.
 
 ## Graphical Overview and the Summary of data
 
+### Descriptive Statistics
+
 ```{r}
 
-# Descriptive Statistics
-
 summary(data)
+
 ```
 
 Gender : This is a categorical variable, So it is not possible to compute descriptive statistics. 
 
 Age: The youngest participant is 17 years old while the oldest participant is 55 years old. The average age of the study participants is 25.51 (~26) years. 
-
 Attitude: The values of attitude ranges from 1.40 to 5.00. The average of attitude is 3.14  while the median is 3.20.
-
 Deep Learning : The values of deep ranges from 1.59 to 4.92. The average of deep is 3.68  while the median is 3.67.
-
 Strategic Learning : The values of stra ranges from 1.25 to 5.00. The average of stra is 3.12  while the median is 3.19.
-
 Surface Learning: The values of surf ranges from 1.58 to 4.33. The average of surf is 2.79  while the median is 2.83.
-
 Exam Points: The lowest exam point is 7 while the highest exam point is 33 The average exam points is 22.72 (~23) and the median is 23.
+
+### Graphical overview of the data
 
 ```{r}
 data <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/learning2014.txt", sep=",", header=TRUE)
 
-# Graphical Representation of Variables
 library(ggplot2)
 library(patchwork)
 
@@ -68,7 +67,6 @@ b <- ggplot(data, aes(x = attitude))+
   labs(title="Distribution of Attitude",x="Attitude", y = "Count") +
   theme_classic()
 
-
 # Distribution of Strategic Learning
 c <- ggplot(data, aes(x = stra))+
   geom_histogram(color = "black", fill = "chocolate", bins = 30) +
@@ -83,15 +81,21 @@ d <- ggplot(data, aes(x = deep))+
 
 # Distribution of Surface Learning
 e <- ggplot(data, aes(x = surf))+
-  geom_histogram(color="gold4", fill="gold2",linetype="dashed", bins = 30) +
+  geom_histogram(color="gold4", fill="gold2", bins = 30) +
   labs(title="Distribution of Surface Learning",x="Surface Learning", y = "Count") +
   theme_classic()
 
-(a + b) / (c+d) /e
+# Distribution of Exam Points
+f <- ggplot(data, aes(x = points))+
+  geom_histogram(color="hotpink1", fill="hotpink3",linetype="dashed", bins = 30) +
+  labs(title="Distribution of Exam Points",x="Exam Points", y = "Count") +
+  theme_classic()
+
+(a + b) / (c+d) /(e+f)
 
 ```
 
-Through these histograms, we can see that age lies on a positively skewed distribution. Deep learning shows a lit bit of a negatively skewed distribution. Distribution of attitude and the distribution of the strategic learning shows normal yet multi-mode distribution. The distribution of surface learning lies on somewhat a positively skewed and slightly normal distribution. 
+Through these histograms, we can see that age lies on a positively skewed distribution. Deep learning shows a lit bit of a negatively skewed distribution. Distribution of attitude and the distribution of the strategic learning shows normal yet multi-mode distribution. The distribution of surface learning lies on slightly positive skewed distribution. The distribution of exam points is not clearly visible.   
 
 ```{r}
 
@@ -150,7 +154,7 @@ e <- e1 + geom_point(colour = "chartreuse") + theme_classic() + geom_smooth(meth
 c+d/e
 ```
 
-There is a weak positive linear relationship between strategic learning and the exam points. There is no any clear linear relationship between deep learning and the exam points. There is a weak negative linear relationship between surface learning and the exam points. 
+There is a weak positive linear relationship between strategic learning and the exam points. There is no any clear linear relationship between deep learning and the exam points. However, the regression line shows that there is a weak negative linear relationship between deep learning nd exam points. There is a weak negative linear relationship between surface learning and the exam points. 
 
 
 ## Model Fitting and Interpretation
@@ -162,35 +166,106 @@ Model1 <- lm(points ~ attitude + stra + deep, data = data)
 summary(Model1)
 ```
 
+Call:
 
+Here it shows our explanatory variables: "attitude", "strategic learning (stra)" and "Deep learning (deep)" and the dependent variable:"exam points (points). 
+
+
+Residuals: 
+
+The residuals are the difference between the actual values and the predicted values. It is good to see that the median value is near to zero (0.5474), as this would tell us our residuals are somewhat symmetrical and that our model is predicting evenly at both the high and low ends of our dataset. Even though this dataset is slightly left-skewed, it is almost shows a normal distribution.  
+
+Coefficients: 
+
+Regarding the estimates,
+Y = 11.3915 + 3.5254(x1) + 0.9621(x2) - 0.7492(x3)
+Here x1 means the attitude, x2 means the strategic learning and the x3 means deep learning. 
+
+Even without any of the attitude, strategic learning and deep learning, the students would score 11.39 points for the exam.Then, for one additional unit of attitude, the exam points will increase by 3.53 (when strategic learning and deep learning is constant). For one additional unit of strategic learning, the exam points will increase only by 0.96 (when attitude and deep learning is constant). For one additional unit of deep learning, the exam points will decrease by 0.75 (when strategic learning and attitude is constant).
+
+Regarding the standard error,
+This shows the standard deviation of the coefficient. Through this we can get an idea about the uncertainty of the coefficient. The standard error is used to create confidence intervals. 
+
+Looking at the confidence interval, it is clear with 95% confident that the actual slope (attitude) is between (3.5254 ± 1.96(0.5683)) = 2.41 and 4.64.
+Looking at the confidence interval, it is clear with 95% confident that the actual slope (strategic learning) is between (0.9621 ± 1.96(0.5367)) = -0.09 and 2.01. 
+Looking at the confidence interval, it is clear with 95% confident that the actual slope (deep learning) is between (-0.7492 ± 1.96(0.7507)) = -2.22 and 0.722. 
+
+Regarding the t-value,
+It is the value of coefficient divided by the standard error. 
+It is always better to large t-statistics, because it indicates that the standard error is small in comparison to the coefficient. Compared to the strategic learning and the deep learning, the t value of attitude is far from 0, indicating that the coefficient is not zero.
+
+Regarding the Pr(>|t|),
+This is calculated using the t-statistic from the T distribution, to understand how significant the coefficient is to the model. In general p < 0.05, is believed to be significant: the coefficient add value to the model by helping to explain the variance within the dependent variable. In this model, it is showed that only the "attitude" variable is significant under 0.05. The "strategic learning (stra)" and the "deep learning (deep)" is not significant under 0.05. 
+
+Thus, I decided to drop both the variables: stra and deep to further analysis purpose. 
 
 ```{r}
 # Model 2
 
-Model2 <- lm(points ~ attitude + stra, data = data)
+Model2 <- lm(points ~ attitude , data = data)
 summary(Model2)
 ```
 
+Call:
+
+Here it shows our explanatory variables: "attitude" and the dependent variable:"exam points (points). 
 
 
-```{r}
-# Model 3
+Residuals: 
 
-Model3 <- lm(points ~ attitude , data = data)
-summary(Model3)
-```
+As the median value is near to zero (0.4339), the residuals are somewhat symmetrical. This model predicts evenly at both the high and low ends of the dataset. 
+Even though this dataset is slightly left-skewed, it is almost shows a normal distribution.  
+
+Coefficients: 
+
+Regarding the estimates,
+Y = 11.6372 + 3.5255(x1) 
+Here x1 means the attitude.  
+
+Even without any of the attitude, the students would score 11.64 points for the exam.Then, for one additional unit of attitude, the exam points will increase by 3.53 
+
+Regarding the standard error,
+Looking at the confidence interval, it is clear with 95% confident that the actual slope (attitude) is between (3.5255 ± 1.96(0.5674)) = 2.41 and 4.64.
+
+Regarding the t-value,
+The t value of attitude is far from 0, indicating that the coefficient is not zero.
+
+Regarding the Pr(>|t|),
+As p < 0.05, the "attitude" variable is significant to the model. 
+
+
+The Multiple R-squared value,
+
+This is mainly use in simple linear regression. It tells us what percentage of the variation within the dependent variable that the independent variable is explaining. Through this, we can determine how well the model is fitting the data. 
+In this model, attitude explains ~19.06% of the variation within the exam points. This means that attitude helps to explains some of the variation within the exam points, but not a lot. So, this model isn’t fitting the data very well.
+
+The Adjusted R-squared value,
+
+This is used in multiple linear regression. It shows the percentage of the variation within the dependent variable that all predictor variables are explaining. 
+The Adjusted R-Squared value is calculated adjusting the variance occurred by adding multiple variables unlike in the Multiple R-squared value. 
+As this model is a simple linear regression mode, there is no point of interpreting the Adjusted R-squared value. 
+
 
 ## Diagnostic Plots
 
 ```{r}
 par(mfrow = c(2,2))
-plot(Model3, which = c(1,2,5))
+plot(Model2, which = c(1,2,5))
 ```
 
-Residuals vs Fitted values:
+Residuals vs Fitted values: 
+This is used to check the linearity assumption. A horizontal line, without distinct patterns is an indication for a good linearity.
+In this model (Model2), there is no any pattern in the residual plot. 
+So, the linearity assumption has met here.
 
 Normal QQ-plot:
+This is used to examine whether the residuals are normally distributed. It’s good if residuals points follow the straight dashed line.
+In Model2, almost all the points fall approximately along the reference line, indicating the normality.
+So, the normality assumption has met here. 
 
-Residuals vs Leverage
-
+Residuals vs Leverage:
+This is used to identify influential cases, that is extreme values that might influence the regression results when included or excluded from the analysis. 
+The plot created using Model2 highlights the top 3 most extreme points as #35, #56 and #71.
+Even though the extreme point:#71 has not exceeded 3 standard deviations, the extreme points #35 and #56 have exceeded it (or else they have standardized residuals below -3).  
+As there are influential cases in Model2, the assumption is not met. 
 
