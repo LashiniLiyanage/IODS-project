@@ -1273,12 +1273,19 @@ data.frame as the <code>newdata</code> argument for
 ##      11.637        3.525</code></pre>
 <div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># New observations</span></span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>new_attitudes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Mia&quot;</span> <span class="ot">=</span> <span class="fl">3.8</span>, <span class="st">&quot;Mike&quot;</span><span class="ot">=</span> <span class="fl">4.4</span>, <span class="st">&quot;Riikka&quot;</span> <span class="ot">=</span> <span class="fl">2.2</span>, <span class="st">&quot;Pekka&quot;</span> <span class="ot">=</span> <span class="fl">2.9</span>)</span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>new_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">attitude =</span> <span class="st">&quot;new_attitudes&quot;</span>)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>new_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">attitude =</span> new_attitudes)</span>
 <span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Print out the new data</span></span>
 <span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>new_data</span></code></pre></div>
 <pre><code>##        attitude
-## 1 new_attitudes</code></pre>
+## Mia         3.8
+## Mike        4.4
+## Riikka      2.2
+## Pekka       2.9</code></pre>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict the new students exam points based on attitude</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(m, <span class="at">newdata =</span> new_data)</span></code></pre></div>
+<pre><code>##      Mia     Mike   Riikka    Pekka 
+## 25.03390 27.14918 19.39317 21.86099</code></pre>
 <p><strong>Awesome work!</strong></p>
 </div>
 </div>

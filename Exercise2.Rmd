@@ -688,12 +688,13 @@ m
 
 # New observations
 new_attitudes <- c("Mia" = 3.8, "Mike"= 4.4, "Riikka" = 2.2, "Pekka" = 2.9)
-new_data <- data.frame(attitude = "new_attitudes")
+new_data <- data.frame(attitude = new_attitudes)
 
 # Print out the new data
 new_data
 
-
+# Predict the new students exam points based on attitude
+predict(m, newdata = new_data)
 
 ```
 
