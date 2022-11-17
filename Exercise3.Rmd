@@ -349,7 +349,7 @@ Hint:
 library(tidyr); library(dplyr); library(ggplot2)
 
 # glimpse at the alc data
-
+glimpse(alc)
 
 # use gather() to gather columns into key-value pairs and then glimpse() at the resulting data
 gather(alc) %>% glimpse
@@ -358,7 +358,8 @@ gather(alc) %>% glimpse
 gather(alc) %>% View
 
 # draw a bar plot of each variable
-gather(alc) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free")
+gather(alc) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") +
+  geom_bar()
 
 
 ```
@@ -406,14 +407,32 @@ Hints:
 # Work with the exercise in this chunk, step-by-step. Fix the R code!
 # alc is available
 
+1:10 %>% mean
+
 # access the tidyverse libraries dplyr and ggplot2
 library(dplyr); library(ggplot2)
 
 # produce summary statistics by group
 alc %>% group_by(sex) %>% summarise(count = n())
 
+alc %>% summarise(count = n(), mean_grade = mean(G3))
+
+alc %>% group_by(sex) %>% summarize(mean_grade = mean(G3))
+alc %>% group_by(sex) %>% summarise(count = n(), mean_grade = mean(G3))
+
+alc %>% group_by(sex, high_use) %>% summarise(count = n(), mean_grade = mean(G3))
 
 ```
+
+```{r}
+
+alc %>% 
+  group_by(sex, high_use) %>% 
+  tally() %>%
+  spread(high_use, n)
+
+```
+
 
 
 ## 3.7 Box plots by groups
@@ -458,10 +477,17 @@ g1 <- ggplot(alc, aes(x = high_use, y = G3))
 g1 + geom_boxplot() + ylab("grade")
 
 # initialize a plot of high_use and absences
-
+g2 <- ggplot(alc, aes(x = high_use, y = absences))
 
 # define the plot as a box plot and draw it
+g2 + geom_boxplot() + ylab("Absences")
 
+
+g3 <- ggplot(alc, aes(x = high_use, y = absences, col = sex))
+g3 + geom_boxplot() + ylab("Grade")
+
+g4 <- ggplot(alc, aes(x = high_use, y = absences, col = sex))
+g4 + geom_boxplot() + ylab("Absences") + ggtitle("Student absences by alcohol consumption and sex")
 
 ```
 
@@ -501,11 +527,23 @@ Hint:
 m <- glm(high_use ~ failures + absences, data = alc, family = "binomial")
 
 # print out a summary of the model
-
+summary(m)
 
 # print out the coefficients of the model
+coef(m)
 
+```
 
+```{r}
+# Model with sex
+
+m2 <- glm(high_use ~ failures + absences + sex, data = alc, family = "binomial")
+
+# print out a summary of the model
+summary(m2)
+
+# print out the coefficients of the model
+coef(m2)
 ```
 
 
@@ -548,11 +586,13 @@ Hints:
 # find the model with glm()
 m <- glm(high_use ~ failures + absences + sex, data = alc, family = "binomial")
 
+summary(m)
+
 # compute odds ratios (OR)
 OR <- coef(m) %>% exp
 
 # compute confidence intervals (CI)
-
+CI <- confint(m) %>% exp
 
 # print out the odds ratios with their confidence intervals
 cbind(OR, CI)
@@ -608,13 +648,13 @@ library(dplyr)
 alc <- mutate(alc, probability = probabilities)
 
 # use the probabilities to make a prediction of high_use
-alc <- mutate(alc, prediction = "change me!")
+alc <- mutate(alc, prediction = probability > 0.5)
 
 # see the last ten original classes, predicted probabilities, and class predictions
 select(alc, failures, absences, sex, high_use, probability, prediction) %>% tail(10)
 
 # tabulate the target variable versus the predictions
-table(high_use = alc$high_use, prediction = "change me!")
+table(high_use = alc$high_use, prediction = alc$prediction)
 
 
 ```
@@ -658,14 +698,35 @@ Hint:
 library(dplyr); library(ggplot2)
 
 # initialize a plot of 'high_use' versus 'probability' in 'alc'
-g <- ggplot(alc, aes(x = "change me!", y = "change me!"))
+g <- ggplot(alc, aes(x = probability, y = high_use))
 
 # define the geom as points and draw the plot
+g1 <- g + geom_point()
+g1
+
+# With col = prediction
+g <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+g1 <- g + geom_point()
+g1
 
 
 # tabulate the target variable versus the predictions
-table(high_use = alc$high_use, prediction = alc$prediction)
+tab <- table(high_use = alc$high_use, prediction = alc$prediction)
+tab
 
+
+# tabulate the target variable versus the probabilities of predictions
+table(high_use = alc$high_use, prediction = alc$prediction) %>% prop.table()
+
+protab <- prop.table(tab)
+protab
+
+
+#Add all margin totals 
+table(high_use = alc$high_use, prediction = alc$prediction) %>% prop.table() %>% addmargins()
+
+addmarg <- addmargins(protab)
+addmarg
 
 ```
 
@@ -716,7 +777,9 @@ loss_func <- function(class, prob) {
 # call loss_func to compute the average number of wrong predictions in the (training) data
 loss_func(class = alc$high_use, prob = 0)
 
+loss_func(class = alc$high_use, prob = 1)
 
+loss_func(class = alc$high_use, prob = alc$probability)
 ```
 
 
@@ -760,7 +823,7 @@ loss_func <- function(class, prob) {
 }
 
 # compute the average number of wrong predictions in the (training) data
-
+loss_func(class = alc$high_use, prob = alc$probability)
 
 # K-fold cross-validation
 library(boot)
@@ -768,6 +831,14 @@ cv <- cv.glm(data = alc, cost = loss_func, glmfit = m, K = nrow(alc))
 
 # average number of wrong predictions in the cross validation
 cv$delta[1]
+
+library(boot)
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = m, K = 10)
+
+# average number of wrong predictions in the cross validation
+cv$delta[1]
+
+?cv.glm
 
 ```
 

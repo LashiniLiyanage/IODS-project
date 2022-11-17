@@ -1,0 +1,297 @@
+# Logistic Regression
+
+```{r}
+date()
+```
+
+## Read the data
+
+```{r}
+
+alc <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/alc.csv", sep=",", header=TRUE)
+
+dim(alc)
+
+str(alc)
+
+colnames(alc)
+
+View(alc)
+```
+
+Even though, I have successfully wrangled the dataset, I decided to go with Kimmo's analyzed dataset for further analysis.  
+
+I gave the dataset a name as "alc". In the further analysis, this dataset will be adressed by "alc". 
+
+The data are from two identical questionnaires related to secondary school student alcohol consumption in Portugal. The data include student grades, demographic data, social and school related features. They were collected through school reports and questionnaires. For this analysis purpose, the data was retrieve from Student Performance Data Set of UCI Machine Learning Repository. Two datasets were provided regarding the performance in Mathematics (mat) and Portuguese language (por). Those datasets were wrangled and linked into one dataset for the further analyze purpose. 
+There are 370 observations and 35 variables: school, sex, age, address, famsize, Pstatus, Medu, Fedu, Mjob, Fjob, reason, guardian, traveltime, studytime, schoolsup, famsup, activities, nursery, higher, internet, romantic, famrel, freetime, goout, Dalc, Walc, health, failures, paid, absences, G1, G2, G3, alc_use and high_use.   
+
+```{r}
+library(tidyverse)
+library(gapminder)
+library(finalfit)
+```
+
+
+
+## Hypothesis 
+
+H1 : There is a relationship between high usage of alcohol and gender
+
+H2 : There is a relationship between high usage of alcohol and romantic relationship
+
+H3 : There is a relationship between high usage of alcohol and number of school absences
+
+H4 : There is a relationship between high usage of alcohol and Final Grade
+
+
+## Numerical and Graphical Representation
+
+```{r}
+# Gender and Alcohol Usage
+
+alc %>% 
+  group_by(sex, high_use) %>% 
+  tally() %>%
+  spread(high_use, n)
+
+g1 <- ggplot(alc, aes(high_use))
+g1 + geom_bar(aes(fill = sex)) + ylab("Count") + xlab("Alcohol Usage") + ggtitle("Student gender by alcohol consumption") + theme_classic()
+
+```
+
+The majority of the people who consume high alcohol are males. The majority of the people who consume less alcohol are females.Looking at this, I think there may be a relationship between gender and the usage of alcohol. 
+
+```{r}
+# Romantic Relationship and Alcohol Usage
+
+alc %>% 
+  group_by(romantic, high_use) %>% 
+  tally() %>%
+  spread(high_use, n)
+
+g2 <- ggplot(alc, aes(high_use))
+g2 + geom_bar(aes(fill = romantic)) + ylab("Count") + xlab("Alcohol Usage") + ggtitle("Student romantic relationships by alcohol consumption") + theme_classic()
+
+```
+
+The majority of the people who consume high alcohol are those who are not a romantic relationship. Similarly, the majority of the people who consume less alcohol also are those who are not a romantic relationship. Looking at this, I think there is no any relationship between romantic relationship and the usage of alcohol. 
+
+```{r}
+# Number of School Absences and Alcohol Usage
+
+alc %>% 
+  group_by(high_use) %>% 
+  summarise(mean_absences = mean(absences))
+
+g3 <- ggplot(alc, aes(x = high_use, y = absences))
+g3 + geom_boxplot(color="red", fill="orange", alpha=0.2) + ylab("Absences") + xlab("Alcohol Usage") + ggtitle("Student absences by alcohol consumption") + theme_classic()
+
+```
+
+Compared to those who consume less alcohol, the ones who consume high alcohol tend to get more absences from their school. Thus, I think there may be a relationship between alcohol usage and the number of school absences. 
+
+```{r}
+# Number of School Absences and Alcohol Usage
+
+alc %>% 
+  group_by(high_use) %>% 
+  summarise(mean_absences = mean(G3))
+
+g4 <- ggplot(alc, aes(x = high_use, y = G3))
+g4 + geom_boxplot(color="darkblue", fill="blue", alpha=0.2) + ylab("Final Grade") + xlab("Alcohol Usage") + ggtitle("Student absences by alcohol consumption") + theme_classic()
+
+```
+
+Compared to those who consume less alcohol, the ones who consume high alcohol tend to get less results for their final exam. Thus, I think there may be a relationship between alcohol usage and the final grade of students. 
+
+
+## Model Fitting and Interpretation
+
+```{r}
+Model <- glm(high_use ~ sex + romantic + absences + G3, data = alc, family = "binomial")
+
+summary(Model)
+
+OR <- coef(Model) %>% exp
+
+CI <- confint(Model) %>% exp
+
+cbind(OR, CI)
+```
+
+Except for the romantic relationships (variable: romantic), all the other variables: gender (sex), number of school absences (absences) and final grade (G3) are significant factors to the usage of alcohol. 
+
+Regarding the coefficients of the model, 
+
+Sex: After adjusting for all the confounders, the odd ratio of male is exp(1.02891) = 2.7980165, with 95% Confidence Interval being 1.7371345 to 4.5719807. This means that the odds of usage of alcohol for males are 179% more likely as compared to females. 
+
+Romantic:  This appeared to be an insignificant variable to the model.
+
+Absences: After adjusting for all the confounders, the odd ratio of absences is exp(0.09402) = 1.0985786, with 95% Confidence Interval being 1.0517733 to 1.1526939. This means that the odds of usage of alcohol increases by about 9% for every 1 unit increase in the number of absences. 
+
+G3 (Final Grade): After adjusting for all the confounders, the odd ratio of final grade is exp(-0.08309) = 0.9202643, with 95% Confidence Interval being 0.8550404 to 0.9891028. This means that the odds of usage of alcohol increases by about 9% for every 1 unit increase in the number of absences. 
+
+Earlier I thought that all the selected variable would have a significant relationship with the usage of alcohol. But it was proven that the romantic relationship is an insignificant factor to the alcohol usage. However all the other variables were significant, similar to what I thought before. 
+
+
+## Predictive power of the model
+
+### Computation of Predictions
+
+```{r}
+
+ModelN <- glm(high_use ~ sex + absences + G3, data = alc, family = "binomial")
+
+probabilities <- predict(ModelN, type = "response")
+
+library(dplyr)
+
+alc <- mutate(alc, probability = probabilities)
+
+alc <- mutate(alc, prediction = probability > 0.5)
+
+select(alc, G3, absences, sex, high_use, probability, prediction) %>% tail(10)
+
+table(high_use = alc$high_use, prediction = alc$prediction)
+```
+
+In order to find the predictive power of the model, the insignificant variable: romantic relationship was removed from the model. A total of 276 cases was correctly predicted by the model. However, a total of 94 cases was incorrectly predicted by the model. 
+
+### Visualization of predictions
+
+```{r}
+
+library(dplyr); library(ggplot2)
+
+g5 <- ggplot(alc, aes(x = probability, y = high_use))
+g5 + geom_point() + theme_classic()
+
+
+g6 <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+g6 + geom_point() + theme_classic()
+
+```
+
+### Computation of probabilities and margins of predictions
+
+```{r}
+
+# Target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+# Target variable versus the probabilities of predictions
+table(high_use = alc$high_use, prediction = alc$prediction) %>% prop.table()
+
+#Add all margin totals 
+table(high_use = alc$high_use, prediction = alc$prediction) %>% prop.table() %>% addmargins()
+
+```
+
+67% of the false high alcohol usage were correctly predicted while 3% of false high alcohol usage were incorrectly predicted as true. On the other hand, only 8% of the true high alcohol usage were correctly predicted while 22% of true high alcohol usage were incorrectly predicted as false. 
+
+### Accuracy and loss functions
+
+```{r}
+
+# define a loss function (mean prediction error)
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# call loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = 0)
+
+loss_func(class = alc$high_use, prob = 1)
+
+loss_func(class = alc$high_use, prob = alc$probability)
+```
+
+Total proportion of inaccurately classified individuals or the training error of this model is 25%.  Only a one fourth of the cases were inaccurately classified, while three fourth of them were accurately classified. Overall, the performance of this model is good enough for further purposes. 
+
+## Cross-validation on the model
+
+### 10-fold cross-validation 
+
+```{r}
+
+library(boot)
+
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = ModelN, K = 10)
+
+cv$delta[1]
+
+```
+
+The computed model (ModelN) also has a similar test set performance (smaller prediction error using 10-fold cross-validation) compared to the model introduced in the Exercise Set (which is approximately 0.26).
+
+### Cross-validation on different logistic regression models
+
+```{r}
+# Model A
+ModelA <- glm(high_use ~ sex + absences + G3, failures + health, data = alc, family = "binomial")
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = ModelA, K = 10)
+cv$delta[1]
+
+probabilities <- predict(ModelA, type = "response")
+alc <- mutate(alc, probability = probabilities)
+loss_func(class = alc$high_use, prob = alc$probability)
+
+
+# Model B
+ModelB <- glm(high_use ~ sex + absences + G3 + failures, data = alc, family = "binomial")
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = ModelB, K = 10)
+cv$delta[1]
+
+probabilities <- predict(ModelB, type = "response")
+alc <- mutate(alc, probability = probabilities)
+loss_func(class = alc$high_use, prob = alc$probability)
+
+
+# Model C
+ModelC <- glm(high_use ~ sex + absences + G3, data = alc, family = "binomial")
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = ModelC, K = 10)
+cv$delta[1]
+
+probabilities <- predict(ModelC, type = "response")
+alc <- mutate(alc, probability = probabilities)
+loss_func(class = alc$high_use, prob = alc$probability)
+
+
+# Model D
+ModelD <- glm(high_use ~ sex + absences, data = alc, family = "binomial")
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = ModelD, K = 10)
+cv$delta[1]
+
+probabilities <- predict(ModelD, type = "response")
+alc <- mutate(alc, probability = probabilities)
+loss_func(class = alc$high_use, prob = alc$probability)
+
+
+# Model E
+ModelE <- glm(high_use ~ sex, data = alc, family = "binomial")
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = ModelE, K = 10)
+cv$delta[1]
+
+probabilities <- predict(ModelE, type = "response")
+alc <- mutate(alc, probability = probabilities)
+loss_func(class = alc$high_use, prob = alc$probability)
+
+```
+
+
+```{r}
+Predictors <- c(6, 5, 4, 3, 2)
+Testing <- c(0.2675676, 0.2459459, 0.2540541, 0.2702703, 0.3)
+Training <- c(0.2513514, 0.2378378, 0.2540541, 0.2540541, 0.3)
+data <- data.frame(Predictors, Testing, Training)
+data
+
+library(latticeExtra)
+xyplot(Testing + Training ~ Predictors, data, type = "l", col=c("steelblue", "#69b3a2") , lwd=2)
+
+```
+
+When there are less number of predictors, the errors get larger. But, its similar when there are more number of predictors also. With the increase of the predictors in the model, the errors get decrease only up to a certain point. Afterwards, it gets increased again.
+
