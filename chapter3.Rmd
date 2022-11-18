@@ -36,13 +36,13 @@ library(finalfit)
 
 ## Hypothesis 
 
-H1 : There is a relationship between high usage of alcohol and gender
+H1 : There is a relationship between high usage of alcohol and gender (Males may have high alcohol consumption)
 
-H2 : There is a relationship between high usage of alcohol and romantic relationship
+H2 : There is a relationship between high usage of alcohol and romantic relationship (Those who are not in a relationship may have  high alcohol consumption)
 
-H3 : There is a relationship between high usage of alcohol and number of school absences
+H3 : There is a relationship between high usage of alcohol and number of school absences (Those who have high school absences may have high alcohol consumption)
 
-H4 : There is a relationship between high usage of alcohol and Final Grade
+H4 : There is a relationship between high usage of alcohol and Final Grade (Those who have lower final grade may have high alcohol consumption)
 
 
 ## Numerical and Graphical Representation
@@ -60,7 +60,7 @@ g1 + geom_bar(aes(fill = sex)) + ylab("Count") + xlab("Alcohol Usage") + ggtitle
 
 ```
 
-The majority of the people who consume high alcohol are males. The majority of the people who consume less alcohol are females.Looking at this, I think there may be a relationship between gender and the usage of alcohol. 
+The majority of the people who consume high alcohol are males. The majority of the people who consume less alcohol are females.Looking at this, I think there may be a relationship between gender and the usage of alcohol, and males may have a higher consumption. 
 
 ```{r}
 # Romantic Relationship and Alcohol Usage
@@ -75,7 +75,7 @@ g2 + geom_bar(aes(fill = romantic)) + ylab("Count") + xlab("Alcohol Usage") + gg
 
 ```
 
-The majority of the people who consume high alcohol are those who are not a romantic relationship. Similarly, the majority of the people who consume less alcohol also are those who are not a romantic relationship. Looking at this, I think there is no any relationship between romantic relationship and the usage of alcohol. 
+The majority of the people who consume high alcohol are those who are not a romantic relationship. Similarly, the majority of the people who consume less alcohol also are those who are not a romantic relationship. Looking at this, there may be no any relationship between romantic relationship and the usage of alcohol. 
 
 ```{r}
 # Number of School Absences and Alcohol Usage
@@ -89,7 +89,7 @@ g3 + geom_boxplot(color="red", fill="orange", alpha=0.2) + ylab("Absences") + xl
 
 ```
 
-Compared to those who consume less alcohol, the ones who consume high alcohol tend to get more absences from their school. Thus, I think there may be a relationship between alcohol usage and the number of school absences. 
+Compared to those who consume less alcohol, the ones who consume high alcohol tend to get more absences from their school. Thus, I think there may be a relationship between alcohol usage and the number of school absences, and those who get more absence may have high consumption of alcohol. 
 
 ```{r}
 # Number of School Absences and Alcohol Usage
@@ -103,7 +103,7 @@ g4 + geom_boxplot(color="darkblue", fill="blue", alpha=0.2) + ylab("Final Grade"
 
 ```
 
-Compared to those who consume less alcohol, the ones who consume high alcohol tend to get less results for their final exam. Thus, I think there may be a relationship between alcohol usage and the final grade of students. 
+Compared to those who consume less alcohol, the ones who consume high alcohol tend to get less results for their final exam. Thus, I think there may be a relationship between alcohol usage and the final grade of students, and those who score less grades may have high consumption of alcohol. 
 
 
 ## Model Fitting and Interpretation
@@ -156,7 +156,7 @@ select(alc, G3, absences, sex, high_use, probability, prediction) %>% tail(10)
 table(high_use = alc$high_use, prediction = alc$prediction)
 ```
 
-In order to find the predictive power of the model, the insignificant variable: romantic relationship was removed from the model. A total of 276 cases was correctly predicted by the model. However, a total of 94 cases was incorrectly predicted by the model. 
+In order to find the predictive power of the model, the insignificant variable: romantic relationship was removed from the model. A total of 276 cases was correctly predicted by the model. However, a total of 94 cases was incorrectly predicted by the model. The model resulted in 248 true negatives, 28 true positives, 83 false negatives and 11 false positives.
 
 ### Visualization of predictions
 

@@ -434,7 +434,7 @@ use R Markdown syntax.</em></p>
 <pre class="r"><code># This is a so-called &quot;R chunk&quot; where you can write R code.
 
 date()</code></pre>
-<pre><code>## [1] &quot;Fri Nov 18 01:45:09 2022&quot;</code></pre>
+<pre><code>## [1] &quot;Fri Nov 18 22:59:55 2022&quot;</code></pre>
 <p>I am excited to participate in this course and learn more about R.
 When I first arrived in Finland two months ago, my R knowledge was
 elementary. However, after taking QRS skills, I learned many things. I
@@ -465,7 +465,7 @@ learning.</em></p>
 regression during this week.</li>
 </ul>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Fri Nov 18 01:45:09 2022&quot;</code></pre>
+<pre><code>## [1] &quot;Fri Nov 18 22:59:55 2022&quot;</code></pre>
 <div id="read-the-data" class="section level2">
 <h2>Read the data</h2>
 <pre class="r"><code>data &lt;- read.table(&quot;https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/learning2014.txt&quot;, sep=&quot;,&quot;, header=TRUE)
@@ -820,7 +820,7 @@ As there are influential cases in Model2, the assumption is not met.</p>
 <div id="logistic-regression" class="section level1">
 <h1>Logistic Regression</h1>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Fri Nov 18 01:45:16 2022&quot;</code></pre>
+<pre><code>## [1] &quot;Fri Nov 18 23:00:03 2022&quot;</code></pre>
 <div id="read-the-data-1" class="section level2">
 <h2>Read the data</h2>
 <pre class="r"><code>alc &lt;- read.table(&quot;https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/alc.csv&quot;, sep=&quot;,&quot;, header=TRUE)
@@ -905,14 +905,17 @@ library(finalfit)</code></pre>
 </div>
 <div id="hypothesis" class="section level2">
 <h2>Hypothesis</h2>
-<p>H1 : There is a relationship between high usage of alcohol and
-gender</p>
+<p>H1 : There is a relationship between high usage of alcohol and gender
+(Males may have high alcohol consumption)</p>
 <p>H2 : There is a relationship between high usage of alcohol and
-romantic relationship</p>
+romantic relationship (Those who are not in a relationship may have high
+alcohol consumption)</p>
 <p>H3 : There is a relationship between high usage of alcohol and number
-of school absences</p>
+of school absences (Those who have high school absences may have high
+alcohol consumption)</p>
 <p>H4 : There is a relationship between high usage of alcohol and Final
-Grade</p>
+Grade (Those who have lower final grade may have high alcohol
+consumption)</p>
 </div>
 <div id="numerical-and-graphical-representation" class="section level2">
 <h2>Numerical and Graphical Representation</h2>
@@ -934,7 +937,7 @@ g1 + geom_bar(aes(fill = sex)) + ylab(&quot;Count&quot;) + xlab(&quot;Alcohol Us
 <p>The majority of the people who consume high alcohol are males. The
 majority of the people who consume less alcohol are females.Looking at
 this, I think there may be a relationship between gender and the usage
-of alcohol.</p>
+of alcohol, and males may have a higher consumption.</p>
 <pre class="r"><code># Romantic Relationship and Alcohol Usage
 
 alc %&gt;% 
@@ -953,7 +956,7 @@ g2 + geom_bar(aes(fill = romantic)) + ylab(&quot;Count&quot;) + xlab(&quot;Alcoh
 <p>The majority of the people who consume high alcohol are those who are
 not a romantic relationship. Similarly, the majority of the people who
 consume less alcohol also are those who are not a romantic relationship.
-Looking at this, I think there is no any relationship between romantic
+Looking at this, there may be no any relationship between romantic
 relationship and the usage of alcohol.</p>
 <pre class="r"><code># Number of School Absences and Alcohol Usage
 
@@ -971,7 +974,8 @@ g3 + geom_boxplot(color=&quot;red&quot;, fill=&quot;orange&quot;, alpha=0.2) + y
 <p>Compared to those who consume less alcohol, the ones who consume high
 alcohol tend to get more absences from their school. Thus, I think there
 may be a relationship between alcohol usage and the number of school
-absences.</p>
+absences, and those who get more absence may have high consumption of
+alcohol.</p>
 <pre class="r"><code># Number of School Absences and Alcohol Usage
 
 alc %&gt;% 
@@ -988,7 +992,8 @@ g4 + geom_boxplot(color=&quot;darkblue&quot;, fill=&quot;blue&quot;, alpha=0.2) 
 <p>Compared to those who consume less alcohol, the ones who consume high
 alcohol tend to get less results for their final exam. Thus, I think
 there may be a relationship between alcohol usage and the final grade of
-students.</p>
+students, and those who score less grades may have high consumption of
+alcohol.</p>
 </div>
 <div id="model-fitting-and-interpretation-1" class="section level2">
 <h2>Model Fitting and Interpretation</h2>
@@ -1092,7 +1097,9 @@ select(alc, G3, absences, sex, high_use, probability, prediction) %&gt;% tail(10
 <p>In order to find the predictive power of the model, the insignificant
 variable: romantic relationship was removed from the model. A total of
 276 cases was correctly predicted by the model. However, a total of 94
-cases was incorrectly predicted by the model.</p>
+cases was incorrectly predicted by the model. The model resulted in 248
+true negatives, 28 true positives, 83 false negatives and 11 false
+positives.</p>
 </div>
 <div id="visualization-of-predictions" class="section level3">
 <h3>Visualization of predictions</h3>
@@ -1163,7 +1170,7 @@ further purposes.</p>
 cv &lt;- cv.glm(data = alc, cost = loss_func, glmfit = ModelN, K = 10)
 
 cv$delta[1]</code></pre>
-<pre><code>## [1] 0.2675676</code></pre>
+<pre><code>## [1] 0.2594595</code></pre>
 <p>The computed model (ModelN) also has a similar test set performance
 (smaller prediction error using 10-fold cross-validation) compared to
 the model introduced in the Exercise Set (which is approximately
@@ -1175,7 +1182,7 @@ the model introduced in the Exercise Set (which is approximately
 ModelA &lt;- glm(high_use ~ sex + absences + G3, failures + health, data = alc, family = &quot;binomial&quot;)
 cv &lt;- cv.glm(data = alc, cost = loss_func, glmfit = ModelA, K = 10)
 cv$delta[1]</code></pre>
-<pre><code>## [1] 0.2648649</code></pre>
+<pre><code>## [1] 0.2540541</code></pre>
 <pre class="r"><code>probabilities &lt;- predict(ModelA, type = &quot;response&quot;)
 alc &lt;- mutate(alc, probability = probabilities)
 loss_func(class = alc$high_use, prob = alc$probability)</code></pre>
@@ -1184,7 +1191,7 @@ loss_func(class = alc$high_use, prob = alc$probability)</code></pre>
 ModelB &lt;- glm(high_use ~ sex + absences + G3 + failures, data = alc, family = &quot;binomial&quot;)
 cv &lt;- cv.glm(data = alc, cost = loss_func, glmfit = ModelB, K = 10)
 cv$delta[1]</code></pre>
-<pre><code>## [1] 0.2459459</code></pre>
+<pre><code>## [1] 0.2513514</code></pre>
 <pre class="r"><code>probabilities &lt;- predict(ModelB, type = &quot;response&quot;)
 alc &lt;- mutate(alc, probability = probabilities)
 loss_func(class = alc$high_use, prob = alc$probability)</code></pre>
@@ -1193,7 +1200,7 @@ loss_func(class = alc$high_use, prob = alc$probability)</code></pre>
 ModelC &lt;- glm(high_use ~ sex + absences + G3, data = alc, family = &quot;binomial&quot;)
 cv &lt;- cv.glm(data = alc, cost = loss_func, glmfit = ModelC, K = 10)
 cv$delta[1]</code></pre>
-<pre><code>## [1] 0.2675676</code></pre>
+<pre><code>## [1] 0.2540541</code></pre>
 <pre class="r"><code>probabilities &lt;- predict(ModelC, type = &quot;response&quot;)
 alc &lt;- mutate(alc, probability = probabilities)
 loss_func(class = alc$high_use, prob = alc$probability)</code></pre>
@@ -1202,7 +1209,7 @@ loss_func(class = alc$high_use, prob = alc$probability)</code></pre>
 ModelD &lt;- glm(high_use ~ sex + absences, data = alc, family = &quot;binomial&quot;)
 cv &lt;- cv.glm(data = alc, cost = loss_func, glmfit = ModelD, K = 10)
 cv$delta[1]</code></pre>
-<pre><code>## [1] 0.2675676</code></pre>
+<pre><code>## [1] 0.2567568</code></pre>
 <pre class="r"><code>probabilities &lt;- predict(ModelD, type = &quot;response&quot;)
 alc &lt;- mutate(alc, probability = probabilities)
 loss_func(class = alc$high_use, prob = alc$probability)</code></pre>
