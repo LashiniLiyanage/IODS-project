@@ -1,0 +1,304 @@
+# Clustering and Classification
+
+```{r}
+date()
+```
+
+## Read the data
+
+```{r}
+
+library(MASS)
+
+# load the data
+data("Boston")
+
+# explore the dataset
+str(Boston)
+dim(Boston)
+
+View(Boston)
+
+```
+
+This data consists of housing values in Suburbs of Boston. It has 506 observations and 14 variables.
+The variables are as follows : 
+  crim (per capita crime rate by town),
+  zn (proportion of residential land zoned for lots over 25,000 sq.ft.), 
+  indus (proportion of non-retail business acres per town.), 
+  chas (Charles River dummy variable (= 1 if tract bounds river; 0 otherwise)), 
+  nox (nitrogen oxides concentration (parts per 10 million)), 
+  rm (average number of rooms per dwelling.), 
+  age (proportion of owner-occupied units built prior to 1940), 
+  dis (weighted mean of distances to five Boston employment centres), 
+  rad (index of accessibility to radial highways), 
+  tax (full-value property-tax rate per $10,000), 
+  ptratio (pupil-teacher ratio by town), 
+  black (1000(Bk - 0.63)^21000(Bk−0.63) where BkBk is the proportion of blacks by town, 
+  lstat (lower status of the population (percent)), 
+  medv(median value of owner-occupied homes in $1000s). 
+  
+None of the variables are categorical. All of them are numerical or integers.
+
+
+## Graphical overview and summaries of the variables
+
+```{r}
+#Summary of the variable
+
+summary(Boston)
+
+```
+
+The Chas is a binary variable and the variable rad is an index variable. Some variables have a higher variability compared to some others. For example, the variable tax (full-value property-tax) ranges from 187 to 711 and the variable black (proportion of blacks by town) ranges from 0.32 to 396.90. However, the variable nox (nitrogen oxides concentration) ranges only from 0.3850 to 0.8710 and the variable rm (average number of rooms per dwelling) ranges only from 3.561 to 8.780. 
+
+```{r}
+# Graphical exploration of data
+
+pairs(Boston)
+
+```
+
+Even though, this graph is somewhat complicated at first, we can get a rough idea about how the variables are. The correlation plot can be used for further understanding about the data.
+
+```{r}
+library(tidyr)
+library(corrplot)
+
+# correlation matrix
+cor_matrix <- cor(Boston)
+cor_matrix %>% round(digits = 2)
+
+# visualize the correlation matrix
+corrplot(cor_matrix, method="square", type="upper", cl.pos = "b", tl.pos = "d", col = COL2('PiYG'), addCoef.col = 'black', tl.cex = 0.6)
+
+```
+
+The bigger and more colourful the square in the cell is, the stronger the correlation is between the variables. The purple colour of the square indicates negative correlation while the green colour indicates a positive correlation. The highest positive correlation is between the variables: tax (full-value property-tax rate per $10,000) and rad (index of accessibility to radial highways).There is a  0.91 correlation between those two variables. The strongest negative correlation is between the varioables: nox (nitrogen oxides concentration (parts per 10 million)) and dis (weighted mean of distances to five Boston employment centres). There is a -0.77 correlation between those two variables. There is a  0.91 correlation between those two variables. 
+
+
+## Standardize the dataset 
+
+```{r}
+# center and standardize variables
+boston_scaled <- scale(Boston)
+
+# summaries of the scaled variables
+summary(boston_scaled)
+
+# class of the boston_scaled object
+class(boston_scaled)
+
+# change the object to data frame
+boston_scaled <- as.data.frame(scale(Boston))
+
+```
+
+Each and every mean of the summary of the scaled dataset is zero. It shows that after the standardization, all variables fit to a normal distribution.
+
+
+```{r}
+# Create a categorical variable of the crime rate
+
+boston_scaled$crim <- as.numeric(boston_scaled$crim)
+bins <- quantile(boston_scaled$crim)
+crime <- cut(boston_scaled$crim, breaks = bins, include.lowest = TRUE,labels = c("low","med_low","med_high","high"))
+
+table(crime)
+
+
+# Drop the crim variable and add crime variable
+
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+boston_scaled <- data.frame(boston_scaled, crime)
+
+# Divide the dataset 
+
+n <- nrow(boston_scaled)
+ind <- sample(n,  size = n * 0.8)
+train <- boston_scaled[ind,]
+test <- boston_scaled[-ind,]
+
+```
+
+## Fit the linear discriminant analysis
+
+```{r}
+# Creating the model
+lda.fit <- lda(crime ~ ., data = train)
+lda.fit
+
+# Visualization of the model
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+
+classes <- as.numeric(train$crime)
+plot(lda.fit, dimen = 2, col = classes, pch = classes)
+lda.arrows(lda.fit, myscale = 2)
+```
+
+The Linear Discriminant Analysis was able to separate the high crime classes well from the other classes (low, med_low, med_high). The most influential line separator is the rad: index of accessibility to radial highways. On the other hand, there is a clear separation between low crime class and med_high crime class which were caused by zn (proportion of residential land zoned for lots over 25,000 sq.ft.) and the nox (nitrogen oxides concentration (parts per 10 million)). This may be due to the differences in rural and urban setting.
+
+The first discriminant function separates 95.25% of the population, while the second discriminant function separates 3.75% of the population. The third discriminant function separates only 1% of the population. 
+
+
+## Prediction with the LDA Model
+
+```{r}
+# Save the correct classes and remove the criome variables from the test data
+correct_classes <- test$crime
+
+test <- dplyr::select(test, -crime)
+```
+
+```{r}
+#predict with the created model
+lda.pred <- predict(lda.fit, newdata = test)
+
+#perform cross tabulation
+table(correct = correct_classes, predicted = lda.pred$class)
+```
+
+The model predicts the high crime class well. The model didn't predict the low crime class well. Out of 102 observations, 71% of them were correctly predicted. Thus, the model can be used for further prediction purposes. 
+
+
+## Clustering
+
+```{r}
+# Reload and scale data set
+data(Boston)
+boston_scaled <- scale(Boston)
+
+# Create euclidean distance matrix 
+dist_eu <- dist(boston_scaled)
+summary(dist_eu)
+
+# Create Manhattan distance matrix 
+dist_man <- dist(boston_scaled, method = "manhattan")
+summary(dist_man)
+```
+
+The distances of each method gives us a different result. 
+
+```{r}
+# k-means clustering
+km <- kmeans(boston_scaled, centers = 3)
+
+# plot the Boston dataset with clusters
+pairs(boston_scaled, col = km$cluster)
+```
+
+```{r}
+# Optimal number of clusters
+set.seed(123)
+k_max <- 10
+twcss <- sapply(1:k_max, function(k){kmeans(boston_scaled, k)$tot.withinss})
+
+# Visualization
+library(ggplot2)
+qplot(x = 1:k_max, y = twcss, geom = 'line')
+```
+
+According to the above graph, two clusters would be the optimal number of clusters in this case. 
+
+```{r}
+# k-means clustering for 2 clusters
+km <-kmeans(boston_scaled, centers = 2)
+
+# plot the normalized Boston dataset with clusters
+pairs(boston_scaled, col = km$cluster)
+
+km <- kmeans(boston_scaled, centers = 2)
+pairs(boston_scaled[,c(1,2,3,4,5,6,7)], col = km$cluster)
+
+km <- kmeans(boston_scaled, centers = 2)
+pairs(boston_scaled[,c(8,9,10,11,12,13,14)], col = km$cluster)
+
+```
+
+The pairs plot shows a clear separation of two populations in some variables. One cluster is associated with low crimes, low proportion of non-retail business acres per town, low nitrogen oxides concentration, lower age, and high median value of owner-occupied homes.
+
+
+## Bonus
+
+```{r}
+# k-means clustering
+km2 <- kmeans(boston_scaled, centers = 3)
+
+# plot the Boston dataset with clusters
+pairs(boston_scaled, col = km2$cluster)
+```
+
+
+```{r}
+# linear discriminant analysis
+boston_scaled <- data.frame(scale(Boston))
+lda.fit2 <- lda(km2$cluster ~ ., data = boston_scaled)
+
+# print the lda.fit object
+lda.fit2
+
+# Visualization of the model
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+
+classes <- as.numeric(km2$cluster)
+plot(lda.fit2, dimen = 2, col = classes, pch = classes)
+lda.arrows(lda.fit2, myscale = 3)
+
+
+```
+
+The clusters have separated very well. The nox (nitrogen oxides concentration), zn (proportion of residential land zoned for lots over 25,000 sq.ft.) and age (proportion of owner-occupied units built prior to 1940= seem to be the most influential line seperators. 
+
+
+## Super Bonus
+
+```{r}
+model_predictors <- dplyr::select(train, -crime)
+# check the dimensions
+dim(model_predictors)
+dim(lda.fit$scaling)
+# matrix multiplication
+matrix_product <- as.matrix(model_predictors) %*% lda.fit$scaling
+matrix_product <- as.data.frame(matrix_product)
+```
+
+```{r}
+# Visualization of the 3D Plot
+library(plotly)
+
+plot_ly(x = matrix_product$LD1, y = matrix_product$LD2, z = matrix_product$LD3, type= 'scatter3d', mode='markers')
+
+```
+
+```{r}
+# Visualization of the 3D Plot (crime classes as colours)
+
+plot_ly(x = matrix_product$LD1, y = matrix_product$LD2, z = matrix_product$LD3, type= 'scatter3d', mode='markers', color = train$crime)
+
+```
+
+```{r}
+# Visualization of the 3D Plot (k mean clusters as colours)
+
+plot_ly(x = matrix_product$LD1, y = matrix_product$LD2, z = matrix_product$LD3, type= 'scatter3d', mode='markers', color = km$cluster[ind])
+```
+
+The first plot shows a well separated plot which has only two visible clusters. In the second plot, high crime class has a separate cluster by their own. All the other classes seem to mix with each other. Again in the third plot, there are two well separated clusters. 
+
+
+
+
