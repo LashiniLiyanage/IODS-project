@@ -52,3 +52,41 @@ View(human)
 
 write.csv(human, file = "data/human.csv")
 
+
+
+## Second Part (Continuation from the last week)
+
+# Mutate the data
+
+library(stringr)
+str(human$GNI)
+
+human$GNI <- str_replace(human$GNI, pattern = ",", replace = "") %>% 
+  as.numeric
+str(human$GNI)
+
+#Exclude the unnecessary variable
+
+library(dplyr)
+keep <- c("Country", "Edu2.FM", "Labo.FM", "Edu.Exp", "Life.Exp", "GNI", "Mat.Mor", "Ado.Birth", "Parli.F")
+human <- select(human, one_of(keep))
+complete.cases(human)
+
+View(human)
+dim(human)
+
+
+#Remove rows with missing values
+human <- human %>% filter(complete.cases(human))
+
+#Remove the observations which relate to regions instead of countries
+last <- nrow(human) - 7
+human <- human[1:last, ]
+
+# Define the row names of the data
+rownames(human) <- human$Country
+human$Country <- NULL
+dim(human)
+
+# Save the dataset (Overwrite the previous one)
+write.csv(human, file = "data/human.csv")

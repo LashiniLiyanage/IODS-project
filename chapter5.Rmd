@@ -1,0 +1,228 @@
+# Dimensionality reduction techniques
+
+```{r}
+date()
+```
+
+## Read the data
+
+```{r}
+human <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/human2.txt", sep=",", header=TRUE)
+```
+
+## Descriptive Analysis
+
+```{r}
+# Table of Descriptive Statistics
+
+library(finalfit)
+library(DT)
+ff_glimpse(human)$Con %>% 
+  datatable (caption = "Summaries of the variables")
+```
+
+All the necessary descriptive statistics related to the variables can be seen in the above table. For easier representation, the statistics were graphically created. 
+
+```{r warning=FALSE, message=FALSE}
+# Graphical Overview of variables
+
+library(GGally)
+
+scatterplot <- function(data, mapping, method = "lm")
+  {
+  ggplot(data = data, mapping = mapping)+
+           geom_point(size = 0.3, color = "blue")+
+           geom_smooth(method = method, size = 0.3, 
+                       color = "red")
+  } 
+
+density <- function(data, mapping) 
+  { 
+    ggplot(data = data, mapping = mapping) +
+       geom_density(fill = "#FF3399", alpha = 0.3) +
+       theme(panel.grid.major = element_blank(), 
+             panel.grid.minor = element_blank(),
+             panel.background = element_rect(fill = "#FFFFCC", color = "black")) 
+    } 
+
+ggpairs(human,  
+        lower = list(continuous = scatterplot), 
+        diag = list(continuous = density), 
+        upper = list(continuous = wrap("cor", size = 3)), 
+        title = "Graphical overview of variables") + theme(axis.text = element_text(size = 4), strip.text.x = element_text(size = 5), strip.text.y = element_text(size = 5))
+```
+
+Regarding the distributions of the variables: They are shown in the diagonal of the above plot. 
+
+The variable: Edu.Exp (Expected years of schooling) seems to be the only variable with a normal distribution. The GNI (Gross National Income per capita), Mat.Mor (Maternal mortality ratio), Ado.Birth (Adolescent birth rate) and Parli.F (Percetange of female representatives in parliament) have positively skewed. The Edu2.FM (Ratio of Female and Male populations with secondary education), Labo.FM (Ratio of labor force participation of females and males) and Life.Exp (Life expectancy at birth) were negatively skewed. 
+
+
+Regarding the correlation between variables: they are shown in the upper right triangular part of the above plot.
+
+Furthermore the direction between each and every variable can be seen easily by the scatter plots and the regression lines at the bottom left triangular part of the above graph. 
+
+
+Edu.Exp (Expected years of schooling) and Life.Exp (Life expectancy at birth) has the highest positive correlation of 0.789. Mat.Mor (Maternal mortality ratio) and the Life.Exp (Life expectancy at birth) has the highest negative correlation of -0.857. Furthermore, the plot created below shows the exact same correlation plot in a different way. 
+
+```{r}
+library(corrplot)
+cor(human) %>% round(digits = 2)
+cor(human) %>% corrplot()
+```
+
+It is more easier to capture the variables with stronger or weaker correlations through this plot, compared to the earlier one. 
+
+
+## Principal Component Analysis (PCA) on non-standardized data
+
+```{r}
+# Perform PCA on raw data
+pca_human <- prcomp(human)
+
+# Summary of PCA
+s <- summary(pca_human)
+s
+
+# Variability captured by the principal components
+pca_pr <- round(100*s$importance[2, ], digits = 1)
+pca_pr
+
+pca_pr2 <- round(100*s$importance[2, ], digits = 2)
+pca_pr2
+
+```
+
+The PC1 explains the total (100%) variability of the
+data set when we round off it to the first digit. 
+Thus, I ran the same code with two digits. It shows that PC1 explains 99.99 variability while the PC2 explains only 0.01 variability of the whole dataset. 
+
+
+```{r warning=FALSE, message=FALSE, dpi=200}
+# Biplot
+
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+
+biplot(pca_human, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2], xlim = c(-0.5, 0.2))
+```
+
+In the biplot, variables are shown by pink, while rows (countries) are shown in grey. GNI lies far from the origin: it has a strong contribution to the PC1. On the other hand, many countries have clustered around the origin: they are not represented on the factor map very well.
+
+
+## Principal Component Analysis (PCA) on standardized data
+
+```{r}
+# Standardized the data
+human_stand <- scale(human)
+
+# Perform PCA on standardized data
+spca_human <- prcomp(human_stand)
+
+# Summary of PCA
+s2 <- summary(spca_human)
+s2
+
+# Variability captured by the principal components
+spca_pr <- round(100*s2$importance[2, ], digits = 1)
+spca_pr
+
+```
+
+Compared to the previous one, all the PC have contribute to the variability of the dataset. More than half of the variability (53.6%) was explained by PC1, while 16.2% of the variability was explained by PC2. 
+
+```{r warning=FALSE, message=FALSE, dpi=200}
+# Biplot
+
+pc_lab <- paste0(names(spca_pr), " (", spca_pr, "%)")
+
+biplot(spca_human, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2], xlim = c(-0.25, 0.25))
+```
+
+Compared to the plot of non-standardized data, here both the countries and the variables have scattered away from each other- Compared to the earlier plot, we can see more variable names. 
+
+## Personal interpretation of PC1 and PC2
+
+As the country names are scatterd all over, we can conclude that they are well represented by the factor map. Rwanda seems to have the best representation by PC2, as it is far away from PC1 origin. 
+
+Chad is well represented by PC1  as it is far away from PC2 origin. 
+
+Similarly, variable: Ratio of labor force participation of females & males and the percentage of female representatives in parliament have a strong contribution to positive PC2. Maternal mortality ratio and Adolescent birth rate have strong contributions to positive PC1. 
+
+
+## Exploration of Tea Dataset
+
+```{r}
+# Read the data
+tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/tea.csv", stringsAsFactors = TRUE)
+
+str(tea)
+
+dim(tea)
+
+View(tea)
+
+```
+
+The "Tea" dataset has 36 variables and 300 observations. Except for the variable:age, which is an integer, all the other variables are categorical variables.
+
+```{r warning=FALSE, message=FALSE}
+# Visualization of the data
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+gather(tea[1:9]) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free")  + geom_bar() + theme(axis.text.x = element_text(angle = 30, hjust = 1, size = 8))
+
+gather(tea[10:18]) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free")  + geom_bar() + theme(axis.text.x = element_text(angle = 30, hjust = 1, size = 8))
+
+gather(tea[20:27]) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free")  + geom_bar() + theme(axis.text.x = element_text(angle = 30, hjust = 1, size = 8))
+
+gather(tea[28:36]) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free")  + geom_bar() + theme(axis.text.x = element_text(angle = 30, hjust = 1, size = 8))
+
+```
+
+As categorized age (age_Q) was there in the dataset, age (numerical variable) was removed from the visualization. 
+
+
+## Multiple Correspondence Analysis
+
+```{r}
+# Select necessary variables
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+tea_time <- select(tea, one_of(keep_columns))
+
+# Multiple Correspondence Analysis
+library(FactoMineR)
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+summary(mca)
+
+```
+
+The above output shows all the summaries related to the MCA.
+<as it is somewhat difficult to understand, I decided to represent MCA in visually.
+
+```{r warning=FALSE, message=FALSE}
+# Visualization of MCA
+
+# MCA Factor Map
+plot(mca, invisible=c("ind"), graph.type = "classic", habillage = "quali")
+
+# MCA Screeplot
+library("factoextra")
+eig.val <- get_eigenvalue(mca)
+fviz_screeplot(mca, addlabels = TRUE, ylim = c(0, 20))
+
+# MCA Biplot
+fviz_mca_biplot(mca,
+                xlim = c(-2, 2),
+                
+               repel = TRUE, 
+               ggtheme = theme_minimal())
+```
+
+The reduction we applied was not efficient on this dataset as only 29.4% of the total variance is explained by first two dimensions. 
+
+On the other hand, it is not easy to come up with conclusions just looking at the factor map or the biplot. Few things that I noticed are: People prefer unpackaged tea from tea shops, People prefer earl grey tea with milk and sugar, and People prefer black tea with no sugar. 
+
