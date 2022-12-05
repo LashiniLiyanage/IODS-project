@@ -90,3 +90,7 @@ dim(human)
 
 # Save the dataset (Overwrite the previous one)
 write.csv(human, file = "data/human.csv")
+
+# Read data again 
+human_ <- read.csv("data/human.csv", header = T, row.names = 1)
+View(human_)
