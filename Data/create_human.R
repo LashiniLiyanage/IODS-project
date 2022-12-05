@@ -94,3 +94,5 @@ write.csv(human, file = "data/human.csv")
 # Read data again 
 human_ <- read.csv("data/human.csv", header = T, row.names = 1)
 View(human_)
+str(human_)
+dim(human_)
